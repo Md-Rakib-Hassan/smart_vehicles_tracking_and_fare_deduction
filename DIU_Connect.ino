@@ -12,10 +12,13 @@
 #define green 5
 #define buzzer 4
 #define servoPin 15
+#define registerPin 25
 
 // WiFi credentials and base URL
-String ssid = "demo";
-String password = "demo1234";
+// String ssid = "DIU_Daffodil Smart City";
+// String password = "diu123456789";
+String ssid = "Kwams";
+String password = "2000kwams20j";
 String base = "https://test-server-iot.vercel.app"; // POST API endpoint
 
 // Initialize components
@@ -50,6 +53,7 @@ void pin_setup() {
   pinMode(buzzer, OUTPUT);
   pinMode(red, OUTPUT);
   pinMode(green, OUTPUT);
+  pinMode(registerPin,INPUT_PULLDOWN);
   servo.attach(servoPin);
   servo.write(0);
 }
@@ -129,10 +133,18 @@ void read_rfid() {
   }
   cardUID.toUpperCase();
 /////////// print_uuid(cardUID);//////////
-
+print_uuid(cardUID);
   // Send UID data to server
   String payload = "{\"uid\":\"" + cardUID + "\"}";
-  post(base + "/booking", payload);
+  int x=digitalRead(registerPin);
+  if(x){
+    Serial.println(x);
+    post(base + "/regirstration-queue", payload,0);
+  }
+  else{
+    post(base + "/booking", payload,1);
+  }
+  
 
   rfid.PICC_HaltA();  // Halt the RFID card
 }
@@ -166,7 +178,7 @@ String get(String endpoint) {
 }
 
 // Perform HTTP POST request with data
-int post(String endpoint, String body_data) {
+int post(String endpoint, String body_data, int gate) {
   http.begin(endpoint);
   http.addHeader("Content-Type", "application/json");
   int res_status = http.POST(body_data);
@@ -176,12 +188,13 @@ int post(String endpoint, String body_data) {
 
   // Handle response
   if (res_status == 200) {
+    
     on(green);
-    open_gate();
+    if(gate)open_gate();
   } else {
     on(red);
     if (res_status == 425) {
-      open_gate();
+      if(gate)open_gate();
     }
   }
   return res_status;
