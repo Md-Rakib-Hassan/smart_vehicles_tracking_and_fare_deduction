@@ -12,7 +12,7 @@
 #define green 5
 #define buzzer 4
 #define servoPin 15
-#define registerPin 25
+#define registerPin 27
 
 // WiFi credentials and base URL
 // String ssid = "DIU_Daffodil Smart City";
@@ -207,9 +207,9 @@ int put(String endpoint, String body_data) {
   return http.PUT(body_data);
 }
 
-// Perform HTTP PATCH request with data
-int patch(String endpoint, String body_data) {
-  http.begin(endpoint);
-  http.addHeader("Content-Type", "application/json");
-  return http.PATCH(body_data);
-}
+// // Perform HTTP PATCH request with data
+// int patch(String endpoint, String body_data) {
+//   http.begin(endpoint);
+//   http.addHeader("Content-Type", "application/json");
+//   return http.PATCH(body_data);
+// }
