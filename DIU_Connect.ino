@@ -7,6 +7,7 @@
 
 // RFID Pins
 #define SS_PIN 2
+// #define SS_PIN2 25
 #define RST_PIN 22
 #define red 21
 #define green 5
@@ -17,12 +18,13 @@
 // WiFi credentials and base URL
 // String ssid = "DIU_Daffodil Smart City";
 // String password = "diu123456789";
-String ssid = "Kwams";
-String password = "2000kwams20j";
+String ssid = "demo";
+String password = "demo1234";
 String base = "https://test-server-iot.vercel.app"; // POST API endpoint
 
 // Initialize components
 MFRC522 rfid(SS_PIN, RST_PIN); // RFID instance
+// MFRC522 rfid2(SS_PIN2, RST_PIN); // RFID instance
 Servo servo;                   // Servo instance
 HTTPClient http;               // HTTP client for requests
 TinyGPSPlus gps;               // GPS instance
@@ -77,6 +79,7 @@ void setup() {
   Serial.begin(9600);            // Begin serial communication
   SPI.begin();                    // Init SPI bus
   rfid.PCD_Init();                // Initialize RFID
+  // rfid2.PCD_Init();                // Initialize RFID
   pin_setup();                    // Setup pins and servo
   SerialGPS.begin(9600, SERIAL_8N1, 16, 17); // Initialize Serial2 for GPS
   connect_wifi();                 // Connect to WiFi
@@ -85,6 +88,8 @@ void setup() {
 // Main loop
 void loop() {
   read_rfid();   // Read RFID card data
+  // delay(1000);   // Delay between operations
+  // read_rfid2();   // Read RFID card data
   wifi_tasks();  // Perform WiFi and GPS tasks
   delay(1000);   // Delay between operations
 }
@@ -109,7 +114,7 @@ void wifi_tasks() {
 
 // Send GPS data via HTTP PUT request
 int gps_put(double latitude, double longitude) {
-  String jsonPayload = "{ \"latitude\": " + String(latitude, 7) + ", \"longitude\": " + String(longitude, 7) + " }";
+  String jsonPayload = "{ \"latitude\": " + String(latitude, 7) + ", \"longitude\": " + String(longitude, 7) + ", \"bus_id\": 2 }";
   return put(base + "/gps", jsonPayload);
 }
 
@@ -135,7 +140,7 @@ void read_rfid() {
 /////////// print_uuid(cardUID);//////////
 print_uuid(cardUID);
   // Send UID data to server
-  String payload = "{\"uid\":\"" + cardUID + "\"}";
+  String payload = "{\"uid\":\"" + cardUID + "\",\"bus_id\":2}";
   int x=digitalRead(registerPin);
   if(x){
     Serial.println(x);
@@ -148,6 +153,34 @@ print_uuid(cardUID);
 
   rfid.PICC_HaltA();  // Halt the RFID card
 }
+
+// void read_rfid2() {
+//   // Check if a new card is present on the sensor
+//   if (!rfid2.PICC_IsNewCardPresent()) return;
+//   if (!rfid2.PICC_ReadCardSerial()) return;
+
+//   // Retrieve and format the UID
+//   String cardUID = "";
+//   for (byte i = 0; i < rfid2.uid.size; i++) {
+//     cardUID += String(rfid2.uid.uidByte[i], HEX);
+//   }
+//   cardUID.toUpperCase();
+// /////////// print_uuid(cardUID);//////////
+// print_uuid(cardUID);
+//   // Send UID data to server
+//   String payload = "{\"uid\":\"" + cardUID + "\"}";
+//   int x=digitalRead(registerPin);
+//   if(x){
+//     Serial.println(x);
+//     post(base + "/regirstration-queue", payload,0);
+//   }
+//   else{
+//     post(base + "/booking", payload,1);
+//   }
+  
+
+//   rfid2.PICC_HaltA();  // Halt the RFID card
+// }
 
 // Check and print GPS data
 void checkGPS() {
